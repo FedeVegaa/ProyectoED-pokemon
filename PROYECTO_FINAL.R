@@ -1,20 +1,24 @@
-setwd("C:/Users/Usuario/Desktop/Facultad/7 Septimo Semestre 2023/Estadística Descriptiva/Proyecto Final")
-
-pokemon <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-07-10/pokemon.csv")
-library(ggplot2)
+# Cargar librerías
+library(tidyverse)
 library(ggthemes)
 library(GGally)
-library(tidyverse)
 library(ggrepel)
 library(fmsb)
 library(gridExtra)
-library(extrafont)
+library(extrafont) 
+
+# Cargar datos
+pokemon <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-07-10/pokemon.csv", show_col_types = FALSE)
+
+# Cargar fuentes
+# Solo correr esto una vez si es la primera vez que usás extrafont:
 font_import()
-fonts()
+
 loadfonts(device = "win", quiet = TRUE)
 
-###### FRECUENCIA DE POKEMON POR TIPO (ver color) ####
-ttipo1 <- names(sort(table(pokemon$tipo_1), decreasing = FALSE)) 
+
+## FRECUENCIA DE POKEMON POR TIPO ##
+ttipo1 <- names(sort(table(pokemon$tipo_1), decreasing = FALSE)) # Ajustamos el eje (de mayor a menor)
 pokemon$tipo_1_ordenado <- factor(pokemon$tipo_1, levels = ttipo1)
 
 # Paleta de colores de Pokémon 
@@ -41,7 +45,7 @@ ggplot(pokemon, aes(y = tipo_1_ordenado, fill = tipo_1)) +
   guides(fill = FALSE)
 
 
-##### #POKEMON LEGENDARIOS Y NO LEGEN - BOXPLOT ####
+## POKEMON LEGENDARIOS Y NO LEGEN - BOXPLOT ##
 box_plot_attr <- select(pokemon, tipo_1, es_legendario, puntos_vida, defensa, ataque, fuerza_especial_ataque, fuerza_especial_defensa, velocidad)
 box_plot_attr_leg <- filter(box_plot_attr, es_legendario == "VERDADERO")
 box_plot_attr_nor <- filter(box_plot_attr, es_legendario == "FALSO")
@@ -73,7 +77,7 @@ bp_nor <- ggplot(data = box_plot_attr_nor_long, aes(attribute, value)) +
 grid.arrange(bp_leg, bp_nor, ncol = 2)
 
 
-###### ¿Como afecta la generacion de cada pokemon a los puntos totales? ####
+## ¿Como afecta la generacion de cada pokemon a los puntos totales? ##
 
 ggplot(pokemon, aes(x = factor(generacion), y = total, 
                     fill = factor(generacion))) + 
@@ -89,7 +93,7 @@ ggplot(pokemon, aes(x = factor(generacion), y = total,
   scale_fill_manual(values=c("#ef476f","#f78c6b" ,"#ffd166","#06d6a0","#118ab2","#073b4c"))
 
 
-#### Radar comparando 3 casos atipicos:
+## GRAFICO RADAR - COMPARACIÓN DE 3 CASOS ATIPICOS ##
 
 vec_mewtwoX <- c(130, 190, 100, 154, 100, 106)
 vec_mewtwoY <- c(140, 150, 70, 194, 120, 106)
@@ -116,8 +120,8 @@ legend("topright",
        bty = "n", pch = 20, col = areas,
        text.col = "grey25", pt.cex = 2)
 
-## PUNTOS TOTALES POR GENERACION PARA 4 TIPOS POKÉMON 
-evo_filtrado <- pokemon %>% filter("NA"!= nivel_evolucion)
+## PUNTOS TOTALES POR GENERACION PARA 4 TIPOS POKÉMON  ##
+evo_filtrado <- pokemon %>% filter("NA"!= nivel_evolucion) # Filtramos segun su nivel evolutivo
 evo_filtrado1 <- evo_filtrado %>% 
   filter(tipo_1 %in% c("Césped", "Normal", "Agua", "Roca"))
 
@@ -133,9 +137,8 @@ ggplot(evo_filtrado1, aes(x = factor(tipo_1), y = total, fill = factor(tipo_1)))
   scale_fill_manual(values = c("#6390F0", "#7AC74C", "#A8A77A", "#B6A136"))
 
 
-###### ¿Existe una relacion entre los puntos de defensa y los de ataque? ####
-
-Tipo.1v3 <- pokemon %>% filter(tipo_1 %in% c("Césped", "Normal", "Agua", "Roca")) %>% select(ataque,defensa,tipo_1)
+## ¿Existe una relacion entre los puntos de defensa y los de ataque? ##
+Tipo.1v3 <- pokemon %>% filter(tipo_1 %in% c("Césped", "Normal", "Agua", "Roca")) %>% select(ataque,defensa,tipo_1) # Filtro
 
 ggpairs(Tipo.1v3, title= "Correlación entre puntos de ataque y de defensa", ggplot2::aes(colour=tipo_1)) +
   scale_color_manual(values=c("#6390F0","#7AC74C","#A8A77A", "#B6A136")) + theme_minimal() +  
@@ -144,9 +147,8 @@ ggpairs(Tipo.1v3, title= "Correlación entre puntos de ataque y de defensa", ggp
     plot.title = element_text(hjust = 0.5, family = "Pokemon GB")
   )
 
-
-#Dispersion con la recta de regresion para 4 tipos:
-Tipo.1v2 <- pokemon %>% filter(tipo_1 %in% c("Césped", "Normal", "Agua", "Roca"))
+### DISPERSION - RECTA DE REGRESION PARA 4 TIPOS ##
+Tipo.1v2 <- pokemon %>% filter(tipo_1 %in% c("Césped", "Normal", "Agua", "Roca")) # Filtro
 
 ggplot(Tipo.1v2, aes(x = ataque, y = defensa, color = factor(tipo_1))) +
   geom_point() +
@@ -158,4 +160,34 @@ ggplot(Tipo.1v2, aes(x = ataque, y = defensa, color = factor(tipo_1))) +
   theme(text = element_text(family = "Pokemon GB"))
 
 
+#############################
+# EL SIGUIENTE GRAFICO LO DEJAMOS FUERA DEL PROYECTO FINAL
+#############################
+PIKA <- pokemon %>% filter(nombre_traducido == "Pikachu") 
+RAICHU <- pokemon %>% filter(nombre_traducido == "Raichu") 
+PICHU <- pokemon %>% filter(nombre_traducido == "Pichu") 
 
+df_pikachu <- data.frame(
+  Atributo = c("Velocidad", "Ataque", "Defensa", "F. Especial Ataque", "F. Especial Defensa", "Puntos de Vida"),
+  Valor = c(PIKA$velocidad, PIKA$ataque, PIKA$defensa, PIKA$fuerza_especial_ataque, PIKA$fuerza_especial_defensa, PIKA$puntos_vida),
+  Pokemon = "Pikachu")
+
+df_raichu <- data.frame(
+  Atributo = c("Velocidad", "Ataque", "Defensa", "F. Especial Ataque", "F. Especial Defensa", "Puntos de Vida"),
+  Valor = c(RAICHU$velocidad, RAICHU$ataque, RAICHU$defensa, RAICHU$fuerza_especial_ataque, RAICHU$fuerza_especial_defensa, RAICHU$puntos_vida),
+  Pokemon = "Raichu")
+
+df_pichu <- data.frame(
+  Atributo = c("Velocidad", "Ataque", "Defensa", "F. Especial Ataque", "F. Especial Defensa", "Puntos de Vida"),
+  Valor = c(PICHU$velocidad, PICHU$ataque, PICHU$defensa, PICHU$fuerza_especial_ataque, PICHU$fuerza_especial_defensa, PICHU$puntos_vida),
+  Pokemon = "Pichu")
+                     
+df_comparacion <- rbind(df_pikachu, df_raichu, df_pichu, df_squirtle)
+
+# Grafico de Lineas - "df_EvoPika"
+ggplot(df_EvoPika, aes(x = Atributo, y = Valor, group = Pokemon, color = Pokemon)) +
+  geom_line() +
+  geom_point(size = 4.5) +
+  scale_color_manual(values = c(Pichu = "#FEE259", Pikachu = "yellow", Raichu = "#F8C165")) +
+  labs(title = "Estadisticas : Nivel evolutivo de Pikachu", x = "Atributo", y = "Valor") +
+  theme_minimal() 
